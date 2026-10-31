@@ -1,0 +1,4 @@
+[
+  {"id": "google/gemini-3.8-flash-tts", "name": "Gemini 3.8 Flash TTS", "mode": "preset"},
+  {"id": "fish-audio/s2.1-pro", "name": "Fish Audio S2.1 Pro", "mode": "clone"}
+]

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f2">
+  <title>ことば Kotoba · 日语声音工作台</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/src/app.js"></script>
+</head>
+<body>
+<svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+  <symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 10v4m4-8v12m4-16v20m4-16v12m4-8v4"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7Z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H5v18h14V8Zm0 0v5h5M8 12h8m-8 4h5"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h7m4 0h5M4 17h3m4 0h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+</defs></svg>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="Kotoba 首页"><span class="brand-mark"><svg><use href="#i-wave"/></svg></span><span>ことば<span class="brand-en">kotoba</span></span></a>
+  <span class="topbar-caption">日语声音工作台</span>
+  <span class="local-label"><span class="status-dot"></span>本地工作空间</span>
+</header>
+<main class="workspace">
+  <div class="page-heading"><div><h1>让文字，有自己的声音。</h1><p>为日语文本选择声音，或用一段录音延续熟悉的音色。</p></div><span class="language-label" lang="ja">日本語 <span>JA</span></span></div>
+  <div id="boot-error" class="notice error" role="alert" hidden></div>
+  <form id="studio-form">
+    <div class="studio-layout">
+      <aside class="voice-panel">
+        <h2>声音设置</h2>
+        <div class="mode-tabs" role="tablist" aria-label="合成方式">
+          <button type="button" id="tab-preset" role="tab" aria-selected="true" aria-controls="preset-panel" data-mode="preset">基础 TTS</button>
+          <button type="button" id="tab-clone" role="tab" aria-selected="false" aria-controls="clone-panel" tabindex="-1" data-mode="clone">声音克隆</button>
+        </div>
+        <div id="preset-panel" role="tabpanel" aria-labelledby="tab-preset">
+          <fieldset class="voice-selection"><legend>选择音色 <span id="selected-count" aria-live="polite">正在加载…</span></legend><div class="selection-actions"><button type="button" id="select-all-voices" class="text-button" disabled>全选</button><button type="button" id="clear-voices" class="text-button" disabled>清空</button></div><div id="voice-options" class="voice-options" aria-describedby="voice-hint"></div><p class="field-hint" id="voice-hint">从 voice_list.csv 加载</p></fieldset>
+          <div class="voice-identity"><span class="voice-monogram" id="voice-monogram">Z</span><div><strong id="voice-name">Zephyr</strong><span id="voice-description">明亮</span></div><svg class="identity-wave" aria-hidden="true"><use href="#i-wave"/></svg></div>
+          <p class="quiet-copy">勾选多个音色，用同一段日语批量生成，逐项试听对比。</p>
+          <div class="field"><label for="concurrency">同时生成数量（并行度）</label><input id="concurrency" type="number" min="1" max="10" step="1" value="3" required aria-describedby="concurrency-hint"><p class="field-hint" id="concurrency-hint">1 为串行，2–10 为并行；批次内所有文件共用开始时间戳。</p></div>
+        </div>
+        <div id="clone-panel" role="tabpanel" aria-labelledby="tab-clone" hidden>
+          <label for="reference" class="field-label">参考录音</label>
+          <label class="upload-zone" id="reference-drop" for="reference"><svg aria-hidden="true"><use href="#i-upload"/></svg><strong id="reference-name">点击选择或拖入录音</strong><span>WAV / MP3 · 最大 15 MiB</span><input type="file" id="reference" accept=".wav,.mp3,audio/wav,audio/mpeg"></label>
+          <div id="reference-preview" hidden><audio id="reference-player" controls preload="metadata" aria-label="参考录音试听"></audio><button type="button" id="remove-reference" class="text-button">移除录音</button></div>
+          <div class="field transcript-field"><div class="label-line"><label for="reference-text">录音原文 <span class="optional">选填</span></label><label class="text-button import-label" for="transcript-file">导入<input id="transcript-file" type="file" accept=".txt,text/plain"></label></div><textarea id="reference-text" rows="4" maxlength="10000" placeholder="填写参考录音实际说出的内容，有助于还原音色。"></textarea></div>
+          <p class="quiet-copy">参考录音决定音色，新生成的内容请在右侧填写。克隆默认使用 Fish Audio。</p>
+        </div>
+        <div class="panel-divider"></div>
+        <div class="field"><label for="instructions">朗读风格</label><textarea id="instructions" rows="3" lang="ja" placeholder="自然な日本語で、優しく読んでください。"></textarea><div class="style-presets" aria-label="快捷朗读风格"><button type="button" data-style="natural">自然</button><button type="button" data-style="gentle">温柔</button><button type="button" data-style="story">叙事</button></div></div>
+        <div class="key-section"><div class="label-line"><label for="api-key">OpenRouter API Key</label><button type="button" id="toggle-key" class="text-button" aria-pressed="false">显示</button></div><input type="password" id="api-key" autocomplete="off" spellcheck="false" placeholder="输入 API Key"><p id="key-hint" class="field-hint">密钥仅用于当前页面，不保存到浏览器。</p></div>
+      </aside>
+      <section class="editor-column" aria-label="日语文本与生成结果">
+        <section class="text-panel">
+          <div class="section-heading"><h2>朗读文本</h2><label class="import-button" for="text-file"><svg aria-hidden="true"><use href="#i-file"/></svg>导入 TXT<input id="text-file" type="file" accept=".txt,text/plain"></label></div>
+          <label for="text" class="sr-only">要合成的日语文本</label>
+          <textarea id="text" class="main-text" required lang="ja" placeholder="ここに日本語のテキストを入力してください。"></textarea>
+          <div class="editor-meta"><button type="button" id="load-sample" class="text-button">填入日语示例</button><span><span id="text-count">0</span> 字符</span></div>
+          <details class="advanced"><summary><span><svg aria-hidden="true"><use href="#i-sliders"/></svg>高级设置</span><span class="summary-description">模型、格式与请求参数</span></summary><div class="advanced-content">
+            <div class="field model-field"><div class="label-line"><label for="model">合成模型</label><button type="button" id="refresh-models" class="text-button">刷新模型列表</button></div><input id="model" list="model-options" placeholder="google/gemini-3.8-flash-tts" required spellcheck="false"><datalist id="model-options"></datalist><p class="field-hint" id="model-hint">Gemini 支持预设音色；声音克隆请使用支持参考音频的模型。</p></div>
+            <div class="field"><label for="format">输出格式</label><select id="format"><option value="wav">WAV · 可直接播放</option><option value="mp3">MP3 · 压缩音频</option><option value="pcm">PCM · 原始音频</option></select></div>
+            <div class="field"><label for="sample-rate">PCM 采样率（Hz）</label><input id="sample-rate" type="number" min="8000" max="192000" value="24000" required></div>
+            <div class="field"><label for="timeout">请求超时（秒）</label><input id="timeout" type="number" min="1" max="600" value="120" required></div>
+            <div class="field"><label for="filename">自定义文件名前缀 <span class="optional">选填</span></label><input id="filename" maxlength="100" placeholder="默认：{timestamp}-{音色名}"><p class="field-hint">留空使用批次开始时的 Unix 秒数，自动追加音色名与扩展名。</p></div>
+            <div class="field custom-voice" id="custom-voice-field" hidden><label for="custom-voice">自定义音色 ID</label><input id="custom-voice" placeholder="所选模型支持的 voice ID" spellcheck="false"></div>
+          </div></details>
+          <div class="output-settings"><div class="label-line"><label for="output-directory">本地保存目录</label><button type="button" id="choose-directory" class="text-button">选择目录</button></div><input id="output-directory" required spellcheck="false" placeholder="输入本地目录的绝对路径" aria-describedby="output-hint"><p id="output-hint" class="field-hint">每批自动创建 {timestamp} 子目录，保存朗读文本 text.txt 和所有生成的音频。</p></div>
+          <div class="generation-bar"><p id="generation-hint">日语文本 → WAV 音频</p><div class="generation-actions"><button type="button" id="preview-button" class="secondary-button">检查请求</button><button type="submit" id="generate-button" class="primary-button" disabled><span id="generate-label">开始任务</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></button></div></div>
+        </section>
+        <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
+        <section id="request-panel" class="request-panel" hidden><div class="section-heading"><h2>请求预览</h2><button type="button" id="close-preview" class="text-button">收起</button></div><p class="field-hint">仅检查参数，不调用语音合成接口。</p><pre id="request-json" tabindex="0"></pre></section>
+        <section class="result-panel" aria-labelledby="result-title"><div class="section-heading"><h2 id="result-title">生成结果</h2><div class="result-actions"><button type="button" id="stop-batch" class="text-button" hidden>停止后续任务</button><button type="button" id="clear-results" class="text-button" hidden>清空结果</button><span id="result-badge" class="result-badge" role="status">等待生成</span></div></div>
+          <div class="result-empty" id="result-empty"><span class="empty-play"><svg aria-hidden="true"><use href="#i-play"/></svg></span><div><strong>下一段声音，从这里开始</strong><p>勾选音色后点击「开始任务」，完成的音频会逐项显示。</p></div></div>
+          <div id="result-content" hidden><div class="result-info"><div><strong id="result-name"></strong><p id="result-meta"></p></div><a id="download" class="download-button"><svg aria-hidden="true"><use href="#i-download"/></svg>下载音频</a></div><audio id="result-player" controls preload="metadata" aria-label="合成结果试听"></audio><p id="generation-id" class="field-hint"></p></div>
+          <div id="history-section" class="history" hidden><h3>本次会话的批次任务</h3><p class="field-hint">完成一项即可试听或下载。结果保留至清空或刷新页面。</p><div id="history-list"></div></div>
+        </section>
+      </section>
+    </div>
+  </form>
+  <footer><span>ことば · 为每一句日语，找到合适的声音。</span><span>由 OpenRouter 提供合成服务 · 实际生成按模型计费</span></footer>
+</main>
+</body>
+</html>
